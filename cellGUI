@@ -1,0 +1,288 @@
+import pylab
+from pylab import *
+import Tkinter
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+import numpy as np
+
+
+class Environment():
+    def __init__(self):
+        #Don't think that I am going to put these in here either, just going to stay with the arrays that I would use to make graphs
+        #startingE = userEToGive
+        #variabilityOfE = userVariability
+        
+        #eGivenArray=[]
+        self.eGivenArray = [0 for x in range(100)]
+        
+    def CalcEToGIve(self, startingE, variabilityOfE):
+        #This will need to be changed just have this here for now so that I dont get errors
+        EtoGive = -1
+        #Have this set so that it will loop until the value is between 0 and 10 (int only)
+        while EtoGive < 0 or EtoGive > 10: #want to get a possible E that is variable but we can't give an agent negative energy (or maybe we want to who knows)
+            if variabilityOfE == 0:
+                EtoGive = startingE
+            else: #If the variability was changed from the starting 0
+                EtoGive = int(np.random.normal(startingE, variabilityOfE, 1 ))
+
+            
+        self.eGivenArray.append(EtoGive)
+        
+        '''   #I thought that this was so that the array will not get too large...I think that I was wrong     
+        if len(self.eGivenArray)%100>70:
+            self.eGivenArray.append(random()*2-1)
+        else:
+            self.eGivenArray.append(EtoGive)
+        '''
+        print EtoGive
+        return  EtoGive  #really I don't think that we need to return anything
+        
+        
+class Agent():
+    def __init__(self,  ):
+        #All arrays that could be used for creating graphs
+        #These are stored as arrays so that they can be graphed as well as so we can have them for stats and stuff later
+        #This was the start of an idea for more random behavior if more stressed (no in use now)
+        self.agentCounter = 0 
+        self.stressOmeter = 4 # Here 5 division, 4 good, 3 slight stress, 2 stressed, 1 very stressed (5 will never really be used, will already have divided)
+        self.wasteArray = [0 for x in range(100)]
+        #Starting the guy at 50 bc this indicates that a cell has just divided 
+        self.storedE = [50 for x in range(100)]
+        #Right now there is no "need" to divide so this is not really that useful right now 
+        
+        #I think that I will just get the memory when needed not something that I want to store here for now 
+        #memory = memoryMetricFromUser
+        
+        self.eUsedArray = [0 for x in range(100)]
+              
+    def update(self, agentE, environE): #This is also where division will happen (This maybe should become its own function)
+        
+        #Going to update if the agent gave too much and wasted E
+        
+        
+        totalE = self.eUsedArray[-1] + environment.eGivenArray[-1]
+        wasteE = totalE - 10 
+
+                            
+        self.wasteArray.append(wasteE) #could be positive and negative numbers here 
+        stored = (10 * self.storedE[-1]) + wasteE
+        
+        if stored >= 100:
+            # now the cell will need to divide (added a counter but don't have a good method to display this yet)
+            self.agentCounter = self.agentCounter + 1
+            stored = stored / 2
+            self.stressOmeter = 4
+        elif stored >=50: #also have added in a stressOmeter (not funstional yet)
+            self.stressOmeter = 4
+        elif stored >=25:
+            self.stressOmeter = 3
+        elif stored >=11:
+            self.stressOmeter = 2
+        else:
+            self.stressOmeter = 1
+            
+        self.storedE.append((stored/10))
+        
+        
+    
+    def CalcENeeded(self, memory, eGivenArray):
+        #Will use a memory so that has been input by the user
+        #The memory from the user will be how much of the total array that the agent can remember 
+        #then from that it calculates the probability of 0-10 energy given 
+        
+        #The percent of the array that will be averaged to create a staring point in the memory 
+        #memoryPercent = double(memory / 100)
+        
+        #this method for memory is LAME
+        if memory > 1:
+            #arrayLen = len(eGivenArray)
+            arrayLen = len(self.eUsedArray)
+        
+            #valuesToAve = int(memoryPercent * arrayLen)
+
+            xmem = arrayLen - memory 
+            total = 0 
+            totalWaste = 0 
+            for x in xrange(xmem, (arrayLen - 1) ):
+                total = total + self.eUsedArray[x]
+                #total = total + eGivenArray[x]   changed this to what the agent gave (I think that was my problem for not converging )
+                totalWaste = totalWaste + self.wasteArray[x]
+                #x = x + 1 
+                
+                
+            ave = total/memory
+            aveWaste = totalWaste/memory 
+        
+        else: #memory is just the last element in the array 
+            ave = self.eUsedArray[-1]
+            #ave = eGivenArray[-1]        #Checks to see what happened the time before
+            aveWaste = self.wasteArray[-1]
+                
+        neededE = -1 #This value is just so that it will enter the while loop 
+        while neededE <= 0 or neededE > 10:
+            #aveWaste must be non-zero for this function to work (if 0 will change to .1 )
+            if aveWaste == 0:
+                aveWaste = .1
+            neededE = round(np.random.normal(ave, abs(aveWaste) , 1))
+            #Because always have to have some base line of energy 
+            if neededE == 0:
+                neededE = 1
+        
+        
+        self.eUsedArray.append(neededE)
+        print "E given by agent"
+        print neededE
+        #Now what will the environment give?   
+        environment.CalcEToGIve(eFromEnvironment.get(), variability.get())
+        #Now need to update the agents waste and stored array (right now nothing is really done with these lists of info)
+        agent1.update(agent1, environment)
+                
+        return neededE
+
+        
+        
+def Simulation():
+    global agent1, environment, wScale2, memory, variability, eFromEnvironment
+    #I think that values in the global should be the agent and environment
+    
+    #The values array could also be one the is in a class (like the agent or environment )
+    
+    #Here need to call the correct functions to simulate the E given 
+    #Then there will be several values arrays that will be used to make the real time graphs
+    
+    
+    
+    #Lets see what the agent will give
+    agent1.CalcENeeded(memory.get(), environment.eGivenArray ) 
+    #Doing all this in the agent class now bc for some reason it would not work here (have the environment, agent and simulation as globals )
+
+    
+    #Now what will the environment give?   
+    #environment.CalcEToGIve(eFromEnvironment.get(), variability.get())
+    #Now need to update the agents waste and stored array (right now nothing is really done with these lists of info)
+    #agent1.update(agent1, environment)
+    
+    root.after(int(wScale2['to'])-wScale2.get(),Simulation)
+
+def RealtimePloter():
+    
+    #These global values will be the ones used by the agent and environment
+    global agent1, environment, wScale, wScale2
+    #values here will be the same as in the other function (E given by the agent)
+    
+    #I think that the only thing that needs to be changed in this function is the values array
+    #Should be the E that the agent has given 
+ 
+    
+    NumberSamples = min(len(environment.eGivenArray),wScale.get())
+    CurrentXAxis = pylab.arange(len(environment.eGivenArray)-NumberSamples,len(environment.eGivenArray),1)
+    line2[0].set_data(CurrentXAxis,pylab.array(environment.eGivenArray[-NumberSamples:]))
+    line1[0].set_data(CurrentXAxis,pylab.array(agent1.eUsedArray[-NumberSamples:]))
+    line3[0].set_data(CurrentXAxis, pylab.array(agent1.storedE[-NumberSamples:]))
+    print "this is line1 0"
+    print line1[0]
+    print environment.eGivenArray
+    print agent1.eUsedArray
+    ax.axis([CurrentXAxis.min(),CurrentXAxis.max(),0,10])
+    canvas.draw()
+    root.after(25,RealtimePloter)
+    
+#Function to close the program when you are done
+def _quit():
+    root.quit()     # stops mainloop
+    root.destroy()  
+
+############################################################################
+# This in a main loop to generate the real-time graphs
+############################################################################
+if __name__ == '__main__':
+
+    #This will create the window that will hold the graphs Tkinter is used for making GUI 
+    #Title will label the window
+    root = Tkinter.Tk()
+    root.wm_title("Simple Agent Simulation")
+    
+    xAchse = pylab.arange(0,100,1)
+    yAchse = pylab.array([0]*100)
+    
+    fig = pylab.figure(figsize = (10,5))
+    ax = fig.add_subplot(111)
+    ax.grid(True)
+    ax.set_title("Realtime Agent Energy Plot")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Energy")
+    #This needs to change based on the input that it is graphing
+    ax.axis([0,10,0,10])
+    line2 = ax.plot(xAchse,yAchse,'-') #this is what creates the plot  (might want line2... for other things that we want to see, but I am not sure that this will work )
+    line1 = ax.plot(xAchse, yAchse, '-')
+    line3 = ax.plot(xAchse, yAchse, '-')
+    
+    #Canvas library is used to make widgets used for the graphics within Tkinter (to draw graphs and plots)
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.show()
+    canvas.get_tk_widget().pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
+    
+    toolbar = NavigationToolbar2TkAgg( canvas, root )
+    toolbar.update()
+    canvas._tkcanvas.pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
+    
+    #Just a simple button to quit and stop the program 
+    button = Tkinter.Button(master=root, text='Quit', command=_quit)
+    button.pack(side=Tkinter.BOTTOM)
+    
+    #These will be the things that we want the user to be able to change 
+    #Scale is a widget that displays a numerical scale
+    #Energy given from the environment
+    #variability of the energy 
+    #memeory of the agent 
+    
+    
+    #Following lines are commented out bc when updated the library it didn't like the .getframe() functions anymore 
+    
+    #wScale = Tkinter.Scale(master=root,label="View Width:", from_=3, to=1000,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
+    #wScale2 = Tkinter.Scale(master=root,label="Speed:", from_=1, to=200,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
+    
+    wScale = Tkinter.Scale(master=root,label="View Width:", from_=3, to=1000,sliderlength=30, orient=Tkinter.HORIZONTAL)
+    wScale2 = Tkinter.Scale(master=root,label="Speed:", from_=1, to=200,sliderlength=30, orient=Tkinter.HORIZONTAL)
+
+    #memory = Tkinter.Scale(master=root,label="Agent Memory:", from_=1, to=100,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
+    #variability = Tkinter.Scale(master=root,label="Variability:", from_=0, to=10,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
+    #eFromEnvironment = Tkinter.Scale(master=root,label="E From Environment:", from_=0, to=10,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
+    
+    memory = Tkinter.Scale(master=root,label="Agent Memory:", from_=1, to=100, orient=Tkinter.HORIZONTAL)
+
+    variability = Tkinter.Scale(master=root,label="Variability:", from_=0, to=10, orient=Tkinter.HORIZONTAL)
+    eFromEnvironment = Tkinter.Scale(master=root,label="E From Environment:", from_=0, to=10,sliderlength=30, orient=Tkinter.HORIZONTAL)
+
+    
+    
+    eFromEnvironment.pack(side=Tkinter.BOTTOM)
+    variability.pack(side=Tkinter.BOTTOM)
+    memory .pack(side=Tkinter.BOTTOM)
+    wScale2.pack(side=Tkinter.BOTTOM)
+    wScale.pack(side=Tkinter.BOTTOM)
+    
+    #What we want the values to be set at first before there is user input 
+    wScale.set(100)
+    wScale2.set(1)
+    #wScale2.set(wScale2['to']-10)
+    memory.set(1) #The agent has a perfect memory (this might be a bad thing for the agent) 
+    variability.set(0)  #no variability (this is just at the start)
+    eFromEnvironment.set(7) #set environment to give 7 (just bc this is what was in the other program )
+    
+    #print memory.get() # I think that I will have to do this whenever I want to get the values from user
+    
+    #Initializes an array of size 100 to all ZEROS
+    #This values array needs to be the agent Energy that is gives
+    #The environment and agent will first be initialized with the generic values
+
+    agent1 = Agent()
+    environment = Environment()
+    
+    root.protocol("WM_DELETE_WINDOW", _quit)  
+    #This then calls the function that will do all the number crunching 
+    root.after(100,Simulation)
+    #Then this one plots 
+    root.after(100,RealtimePloter)
+    #Now this keeps is going until the end of time
+    Tkinter.mainloop()
+    #pylab.show()
